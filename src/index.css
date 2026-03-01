@@ -1,0 +1,252 @@
+@import "tailwindcss";
+
+/* ── AtlasID Design System — Tailwind v4 CSS-first theme ─────────────────────── */
+@theme {
+  /* ─ Colors ─────────────────────────────────────────────────────────────── */
+  --color-atlas-blue: #2e77ff;
+  --color-atlas-blue-dim: #1a5fe0;
+  --color-atlas-blue-deep: #1451cc;
+
+  --color-surface-void: #060810;
+  --color-surface-navy: #0d1117;
+  --color-surface-graphite: #161b26;
+  --color-surface-slate: #1e2535;
+
+  --color-status-success: #22c55e;
+  --color-status-warning: #f59e0b;
+  --color-status-error: #ef4444;
+
+  --color-text-primary: #ffffff;
+  --color-text-secondary: rgba(255, 255, 255, 0.75);
+  --color-text-muted: rgba(255, 255, 255, 0.45);
+  --color-text-link: #5b9aff;
+
+  /* ─ Font family ─────────────────────────────────────────────────────────── */
+  --font-manrope: 'Manrope', sans-serif;
+
+  /* ─ Border radius ───────────────────────────────────────────────────────── */
+  --radius-card: 16px;
+  --radius-control: 8px;
+  --radius-pill: 9999px;
+
+  /* ─ Box shadows ─────────────────────────────────────────────────────────── */
+  --shadow-elevation-1: 0 2px 8px rgba(0, 0, 0, 0.30);
+  --shadow-elevation-2: 0 8px 24px rgba(0, 0, 0, 0.40);
+  --shadow-elevation-3: 0 24px 64px rgba(0, 0, 0, 0.60);
+  --shadow-glow-blue-sm: 0 0 0 3px rgba(46, 119, 255, 0.25);
+  --shadow-glow-blue-md: 0 4px 24px rgba(46, 119, 255, 0.40);
+  --shadow-btn-primary: 0 4px 16px rgba(46, 119, 255, 0.30);
+  --shadow-glow-success: 0 4px 16px rgba(34, 197, 94, 0.30);
+  --shadow-glow-error: 0 4px 16px rgba(239, 68, 68, 0.30);
+
+  /* ─ Max widths ──────────────────────────────────────────────────────────── */
+  --max-w-auth-card: 38rem;
+  --max-w-content: 90rem;
+
+  /* ─ Custom breakpoints ──────────────────────────────────────────────────── */
+  --breakpoint-3xl: 2560px;
+  /* 2K / QHD */
+  --breakpoint-4xl: 3840px;
+  /* 4K / UHD */
+}
+
+/* ── Global resets & base styles ────────────────────────────────────────────── */
+@layer base {
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html {
+    font-family: 'Manrope', sans-serif;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
+    /* Tell the browser this is a dark page — makes autofill use dark colours */
+    color-scheme: dark;
+  }
+
+  body {
+    background-color: #060810;
+    color: #ffffff;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  input,
+  button,
+  select,
+  textarea {
+    font-family: inherit;
+    outline: none;
+  }
+
+  /* Prevent Chrome/Edge autofill from painting a white background */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 1000px #161b26 inset !important;
+    -webkit-text-fill-color: #ffffff !important;
+    caret-color: #ffffff;
+    /* Delay the transition so long the background can never flip back to white */
+    transition: background-color 9999999s ease-in-out 0s;
+  }
+}
+
+/* ── Utility classes (AtlasID-specific) ─────────────────────────────────────── */
+@layer utilities {
+  .glass-1 {
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+  }
+
+  .glass-2 {
+    background: rgba(14, 20, 36, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .glass-3 {
+    background: rgba(6, 8, 16, 0.90);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-right: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .border-glass {
+    border-color: rgba(255, 255, 255, 0.10);
+  }
+
+  .text-muted {
+    color: rgba(255, 255, 255, 0.45);
+  }
+
+  .glow-pulse {
+    animation: glowPulse 2s ease-in-out infinite;
+  }
+
+  /* Hide scrollbar visually but keep it functional */
+  .scrollbar-hidden {
+    scrollbar-width: none;        /* Firefox */
+    -ms-overflow-style: none;     /* IE / Edge */
+  }
+  .scrollbar-hidden::-webkit-scrollbar {
+    display: none;                /* Chrome / Safari / Opera */
+  }
+}
+
+/* ── Keyframe animations ─────────────────────────────────────────────────────── */
+@keyframes glowPulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.4;
+  }
+}
+
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-slide-up {
+  animation: fadeSlideUp 0.5s ease forwards;
+}
+
+@keyframes progressFill {
+  from {
+    width: 0%;
+  }
+
+  to {
+    width: 100%;
+  }
+}
+
+/* ── Success screen animations ───────────────────────────────────────────────── */
+
+@keyframes holographicShine {
+  0% {
+    background-position: -200% center;
+    opacity: 0;
+  }
+
+  20% {
+    opacity: 1;
+  }
+
+  80% {
+    opacity: 1;
+  }
+
+  100% {
+    background-position: 200% center;
+    opacity: 0;
+  }
+}
+
+@keyframes stampIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.4) rotate(-15deg);
+  }
+
+  60% {
+    transform: scale(1.15) rotate(3deg);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes particleOrbit {
+  0% {
+    opacity: 0.8;
+    transform: rotate(var(--deg, 0deg)) translateX(calc(50% + 8px));
+  }
+
+  50% {
+    opacity: 0.2;
+  }
+
+  100% {
+    opacity: 0.8;
+    transform: rotate(calc(var(--deg, 0deg) + 360deg)) translateX(calc(50% + 8px));
+  }
+}
+
+@keyframes sparkle {
+
+  0%,
+  100% {
+    opacity: 0;
+    transform: rotate(var(--deg, 0deg)) translateX(32px) scale(0.5);
+  }
+
+  50% {
+    opacity: 1;
+    transform: rotate(var(--deg, 0deg)) translateX(32px) scale(1);
+  }
+}
