@@ -24,7 +24,7 @@ export const AppShell: React.FC<AppShellProps> = ({
     const closeSidebar = useCallback(() => setSidebarOpen(false), []);
 
     return (
-        <div className={`flex h-screen overflow-hidden ${className}`} style={{ background: '#060810' }}>
+        <div className={`flex h-screen overflow-hidden bg-surface-void ${className}`}>
 
             {/* ── Mobile backdrop ─────────────────────────────────────────────── */}
             {sidebarOpen && (

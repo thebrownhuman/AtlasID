@@ -2,7 +2,7 @@
 // Full dashboard page composition — assembles AppShell with all widgets.
 // Routing: activeNav state drives which page component is rendered.
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AppShell } from './AppShell';
 import { TopNavigation } from './TopNavigation';
 import { Sidebar } from './Sidebar';
@@ -151,6 +151,23 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
     className = '',
 }) => {
     const [activeNav, setActiveNav] = useState('overview');
+    const [isDark, setIsDark] = useState<boolean>(() => {
+        // Persist preference across sessions
+        return localStorage.getItem('atlasid-theme') !== 'light';
+    });
+
+    useEffect(() => {
+        const html = document.documentElement;
+        if (isDark) {
+            html.classList.remove('light');
+            html.classList.add('dark');
+            localStorage.setItem('atlasid-theme', 'dark');
+        } else {
+            html.classList.remove('dark');
+            html.classList.add('light');
+            localStorage.setItem('atlasid-theme', 'light');
+        }
+    }, [isDark]);
 
     const renderPage = () => {
         switch (activeNav) {
@@ -178,6 +195,9 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
                         initials={initials}
                         userName={userName}
                         onSignOut={onSignOut}
+                        onNavigate={setActiveNav}
+                        isDark={isDark}
+                        onThemeToggle={() => setIsDark(d => !d)}
                     />
                 }
             >

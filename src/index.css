@@ -50,6 +50,15 @@
   /* 4K / UHD */
 }
 
+/* ── Autofill keyframe — extra technique for mobile Chrome/Safari ────────────── */
+@keyframes autofill-dark-bg {
+  to {
+    background-color: #161b26;
+    color: #ffffff;
+    -webkit-text-fill-color: #ffffff;
+  }
+}
+
 /* ── Global resets & base styles ────────────────────────────────────────────── */
 @layer base {
 
@@ -86,16 +95,32 @@
     outline: none;
   }
 
-  /* Prevent Chrome/Edge autofill from painting a white background */
+  /* Prevent autofill from painting a white/yellow background (desktop + mobile) */
   input:-webkit-autofill,
   input:-webkit-autofill:hover,
   input:-webkit-autofill:focus,
-  input:-webkit-autofill:active {
-    -webkit-box-shadow: 0 0 0 1000px #161b26 inset !important;
+  input:-webkit-autofill:active,
+  textarea:-webkit-autofill,
+  textarea:-webkit-autofill:hover,
+  textarea:-webkit-autofill:focus,
+  textarea:-webkit-autofill:active,
+  select:-webkit-autofill,
+  select:-webkit-autofill:hover,
+  select:-webkit-autofill:focus,
+  select:-webkit-autofill:active {
+    /* Force dark background via inset shadow — works on Chrome desktop & Android */
+    -webkit-box-shadow: 0 0 0 9999px #161b26 inset !important;
+    box-shadow: 0 0 0 9999px #161b26 inset !important;
+    /* Force white text */
     -webkit-text-fill-color: #ffffff !important;
-    caret-color: #ffffff;
-    /* Delay the transition so long the background can never flip back to white */
-    transition: background-color 9999999s ease-in-out 0s;
+    color: #ffffff !important;
+    caret-color: #ffffff !important;
+    /* Freeze the background transition so the browser never flips it back */
+    background-color: #161b26 !important;
+    transition: background-color 9999999s ease-in-out 0s,
+                color 9999999s ease-in-out 0s !important;
+    /* Animation trick — extra coverage for mobile Chrome/Safari autofill overlay */
+    animation: autofill-dark-bg 0s forwards !important;
   }
 }
 
@@ -142,6 +167,63 @@
   .scrollbar-hidden::-webkit-scrollbar {
     display: none;                /* Chrome / Safari / Opera */
   }
+}
+
+/* ── Light mode theme ────────────────────────────────────────────────────────── */
+html.light {
+  color-scheme: light;
+
+  /* Remap surface design tokens to light values */
+  --color-surface-void:     #f0f4f8;
+  --color-surface-navy:     #f8fafc;
+  --color-surface-graphite: #ffffff;
+  --color-surface-slate:    #f1f5f9;
+
+  /*
+   * Flip 'white' → dark slate so text-white / border-white / bg-white/[x]
+   * all automatically become readable on light backgrounds.
+   */
+  --color-white: #0f172a;
+}
+
+html.light body {
+  background-color: #f0f4f8;
+  color: #0f172a;
+}
+
+/* Override glass surfaces for light mode */
+html.light .glass-1 {
+  background: rgba(255, 255, 255, 0.75) !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+}
+html.light .glass-2 {
+  background: rgba(255, 255, 255, 0.93) !important;
+  border-color: rgba(0, 0, 0, 0.07) !important;
+}
+html.light .glass-3 {
+  background: rgba(240, 244, 248, 0.97) !important;
+  border-right-color: rgba(0, 0, 0, 0.07) !important;
+}
+
+/* Fix hardcoded dark AppShell background */
+html.light .bg-surface-void,
+html.light [style*="background: #060810"],
+html.light [style*="background:#060810"],
+html.light [style*="background: rgb(6"] {
+  background: #f0f4f8 !important;
+}
+
+/* Autofill override for light mode */
+html.light input:-webkit-autofill,
+html.light input:-webkit-autofill:hover,
+html.light input:-webkit-autofill:focus,
+html.light input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 9999px #ffffff inset !important;
+  box-shadow: 0 0 0 9999px #ffffff inset !important;
+  -webkit-text-fill-color: #0f172a !important;
+  color: #0f172a !important;
+  caret-color: #0f172a !important;
+  background-color: #ffffff !important;
 }
 
 /* ── Keyframe animations ─────────────────────────────────────────────────────── */

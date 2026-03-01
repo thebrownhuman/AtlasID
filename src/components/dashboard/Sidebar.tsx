@@ -119,26 +119,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
             ))}
         </nav>
 
-        {/* ── Bottom promo ─────────────────────────────────────────────── */}
-        <div className="px-4 py-4 border-t border-white/[0.06]">
-            <div
-                className="rounded-card px-4 py-3.5 flex flex-col gap-1"
-                style={{
-                    background: 'linear-gradient(135deg,rgba(46,119,255,0.12),rgba(91,154,255,0.06))',
-                    border: '1px solid rgba(46,119,255,0.18)',
-                }}
-            >
-                <p className="text-body-sm font-semibold text-white">Upgrade to Enterprise</p>
-                <p className="text-label text-white/50">Multi-tenant identity & SSO</p>
-                <button
-                    type="button"
-                    className="mt-2 w-full py-2 rounded-control text-body-sm font-semibold text-white
-                     bg-atlas-blue hover:bg-atlas-blue-dim transition-colors duration-200"
-                >
-                    Learn more
-                </button>
-            </div>
-        </div>
     </div>
 );
 

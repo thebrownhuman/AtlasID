@@ -3,6 +3,7 @@
 // global search, notification bell, and user avatar menu.
 
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { BRAND_NAME } from '../../data/mockData';
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
@@ -14,6 +15,9 @@ interface TopNavigationProps {
     /** Injected by AppShell via cloneElement */
     readonly onMenuClick?: () => void;
     readonly onSignOut?: () => void;
+    readonly onNavigate?: (page: string) => void;
+    readonly isDark?: boolean;
+    readonly onThemeToggle?: () => void;
     readonly className?: string;
 }
 
@@ -82,35 +86,131 @@ const NotificationBell: React.FC<{ count?: number }> = ({ count = 3 }) => (
 // ─── AvatarMenu ────────────────────────────────────────────────────────────────
 
 const AvatarMenu: React.FC<{
-    initials: string; userName: string; onSignOut?: () => void;
-}> = ({ initials, userName, onSignOut }) => {
+    initials: string;
+    userName: string;
+    onSignOut?: () => void;
+    onNavigate?: (page: string) => void;
+    isDark?: boolean;
+    onThemeToggle?: () => void;
+}> = ({ initials, userName, onSignOut, onNavigate, isDark = true, onThemeToggle }) => {
     const [open, setOpen] = useState(false);
-    const ref = useRef<HTMLDivElement>(null);
+    const [pos, setPos] = useState({ top: 0, right: 0, width: 0 });
+    const btnRef = useRef<HTMLButtonElement>(null);
+    const dropdownRef = useRef<HTMLDivElement>(null);
 
+    // Calculate fixed position from button rect when opening
+    const handleToggle = () => {
+        if (!open && btnRef.current) {
+            const r = btnRef.current.getBoundingClientRect();
+            setPos({
+                top: r.bottom + 8,
+                right: window.innerWidth - r.right,
+                width: Math.max(r.width, 160),
+            });
+        }
+        setOpen(o => !o);
+    };
+
+    // Close only when clicking OUTSIDE both the button AND the dropdown
     useEffect(() => {
-        const handler = (e: MouseEvent) => {
-            if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+        if (!open) return;
+        const close = (e: MouseEvent) => {
+            const inBtn = btnRef.current?.contains(e.target as Node);
+            const inMenu = dropdownRef.current?.contains(e.target as Node);
+            if (!inBtn && !inMenu) setOpen(false);
         };
-        document.addEventListener('mousedown', handler);
-        return () => document.removeEventListener('mousedown', handler);
-    }, []);
+        const closeOnScroll = () => setOpen(false);
+        document.addEventListener('mousedown', close);
+        document.addEventListener('scroll', closeOnScroll, true);
+        return () => {
+            document.removeEventListener('mousedown', close);
+            document.removeEventListener('scroll', closeOnScroll, true);
+        };
+    }, [open]);
 
-    return (
-        <div className="relative w-44" ref={ref}>
+    const dropdown = open ? createPortal(
+        <div
+            ref={dropdownRef}
+            style={{
+                position: 'fixed',
+                top: pos.top,
+                right: pos.right,
+                minWidth: pos.width,
+                zIndex: 99999,
+            }}
+            className="rounded-card py-1 glass-2 border border-white/[0.10]
+                        shadow-elevation-3 animate-fade-slide-up"
+            role="menu"
+            aria-label="Account options"
+        >
+            {[
+                { icon: 'person',   label: 'Profile',        page: 'identity' },
+                { icon: 'settings', label: 'Settings',        page: 'settings' },
+                { icon: 'help',     label: 'Help & Support',  page: null },
+            ].map(({ icon, label, page }) => (
+                <button
+                    key={label}
+                    type="button"
+                    role="menuitem"
+                    onClick={() => { setOpen(false); if (page) onNavigate?.(page); }}
+                    className="w-full flex items-center gap-2.5 px-4 py-2.5 text-body-sm text-white/70
+                     hover:text-white hover:bg-white/[0.06] transition-colors duration-150 whitespace-nowrap"
+                >
+                    <span className="material-symbols-outlined text-base text-white/40" aria-hidden="true">
+                        {icon}
+                    </span>
+                    {label}
+                </button>
+            ))}
+
+            {/* Theme toggle */}
             <button
                 type="button"
-                onClick={() => setOpen(o => !o)}
+                role="menuitem"
+                onClick={onThemeToggle}
+                className="w-full flex items-center gap-2.5 px-4 py-2.5 text-body-sm text-white/70
+                 hover:text-white hover:bg-white/[0.06] transition-colors duration-150 whitespace-nowrap"
+            >
+                <span className="material-symbols-outlined text-base text-white/40" aria-hidden="true">
+                    {isDark ? 'light_mode' : 'dark_mode'}
+                </span>
+                {isDark ? 'Light mode' : 'Dark mode'}
+            </button>
+
+            <div className="border-t border-white/[0.08] mt-1 pt-1">
+                <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => { setOpen(false); onSignOut?.(); }}
+                    className="w-full flex items-center gap-2.5 px-4 py-2.5 text-body-sm
+                     text-status-error/70 hover:text-status-error hover:bg-status-error/[0.06]
+                     transition-colors duration-150 whitespace-nowrap"
+                >
+                    <span className="material-symbols-outlined text-base" aria-hidden="true">logout</span>
+                    Sign out
+                </button>
+            </div>
+        </div>,
+        document.body
+    ) : null;
+
+    return (
+        <>
+            <button
+                ref={btnRef}
+                type="button"
+                onClick={handleToggle}
                 aria-expanded={open}
                 aria-haspopup="true"
                 aria-label="Account menu"
-                className="w-full flex items-center gap-2 pl-1 pr-2 py-1 rounded-control
+                className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-control
                    border border-white/[0.10] bg-white/[0.04]
                    hover:bg-white/[0.08] hover:border-white/20
                    transition-all duration-200"
             >
                 <div
                     className="w-7 h-7 rounded-full flex items-center justify-center
-                     text-xs font-bold text-white"
+                     text-xs font-bold text-white flex-shrink-0"
                     style={{
                         background: 'linear-gradient(135deg,rgba(46,119,255,0.60),rgba(91,154,255,0.35))',
                         border: '1px solid rgba(46,119,255,0.40)',
@@ -126,60 +226,19 @@ const AvatarMenu: React.FC<{
                     expand_more
                 </span>
             </button>
-
-            {/* Dropdown */}
-            {open && (
-                <div
-                    className="absolute right-0 top-full mt-2 w-full rounded-card py-1 z-50
-                     glass-2 border border-white/[0.10]
-                     shadow-elevation-3 animate-fade-slide-up"
-                    role="menu"
-                    aria-label="Account options"
-                >
-                    {[
-                        { icon: 'person', label: 'Profile' },
-                        { icon: 'settings', label: 'Settings' },
-                        { icon: 'help', label: 'Help & Support' },
-                    ].map(({ icon, label }) => (
-                        <button
-                            key={label}
-                            type="button"
-                            role="menuitem"
-                            className="w-full flex items-center gap-2.5 px-4 py-2.5 text-body-sm text-white/70
-                         hover:text-white hover:bg-white/[0.06] transition-colors duration-150 whitespace-nowrap"
-                        >
-                            <span className="material-symbols-outlined text-base text-white/40" aria-hidden="true">
-                                {icon}
-                            </span>
-                            {label}
-                        </button>
-                    ))}
-                    <div className="border-t border-white/[0.08] mt-1 pt-1">
-                        <button
-                            type="button"
-                            role="menuitem"
-                            onClick={onSignOut}
-                            className="w-full flex items-center gap-2.5 px-4 py-2.5 text-body-sm
-                         text-status-error/70 hover:text-status-error hover:bg-status-error/[0.06]
-                         transition-colors duration-150"
-                        >
-                            <span className="material-symbols-outlined text-base" aria-hidden="true">logout</span>
-                            Sign out
-                        </button>
-                    </div>
-                </div>
-            )}
-        </div>
+            {dropdown}
+        </>
     );
 };
 
 // ─── TopNavigation ─────────────────────────────────────────────────────────────
 
 export const TopNavigation: React.FC<TopNavigationProps> = ({
-    initials = 'AC', userName = 'Alex Chen', onMenuClick, onSignOut, className = '',
+    initials = 'AC', userName = 'Alex Chen', onMenuClick, onSignOut,
+    onNavigate, isDark = true, onThemeToggle, className = '',
 }) => (
     <nav
-        className={`flex items-center gap-3 px-4 sm:px-6 h-16 3xl:h-20
+        className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-6 h-14 sm:h-16 3xl:h-20
                 border-b border-white/[0.06] glass-2 ${className}`}
         aria-label="Top navigation"
     >
@@ -204,7 +263,14 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
 
         <SearchBar />
         <NotificationBell count={3} />
-        <AvatarMenu initials={initials} userName={userName} onSignOut={onSignOut} />
+        <AvatarMenu
+            initials={initials}
+            userName={userName}
+            onSignOut={onSignOut}
+            onNavigate={onNavigate}
+            isDark={isDark}
+            onThemeToggle={onThemeToggle}
+        />
     </nav>
 );
 
